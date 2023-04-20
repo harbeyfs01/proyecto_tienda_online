@@ -1,6 +1,7 @@
 <?php
 
-require 'config/databae.php';
+require 'config/config.php';
+require 'config/database.php';
 $db = new Database();
 $con = $db->conectar();
 
@@ -25,8 +26,6 @@ $resultado = $sql->fetchAll(PDO::FETCH_ASSOC);
     integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" 
     crossorigin="anonymous">
 
-    
-    integrity="sha384-18mE4kWBq78iYhFldvKuhfTaU
     <link href=css/estilos.css rel="stylesheet">
 </head>
 
@@ -51,7 +50,9 @@ $resultado = $sql->fetchAll(PDO::FETCH_ASSOC);
                             <a href="#" class="nav-link"> Contacto </a>
                         </li>
                     </u1>
-                    <a href="carrito.php" class="btn btn-primary"> Carrito </a>
+                    <a href="checkout.php" class="btn btn-primary"> 
+                        Carrito <span id="num_cart" class="badge bg-secondary"> <?php echo $num_cart; ?></span>
+                    </a>
                 </div>
             </div>
         </div>
@@ -61,13 +62,13 @@ $resultado = $sql->fetchAll(PDO::FETCH_ASSOC);
     <main>
         <div class="container">
             <div class="row row-col-1 row-cols-sm-2 row-cols-md-3 g-3">
-                <?php foreach ($resultado as $row){ ?>
+                <?php foreach ($resultado as $row) { ?>
                     <div class="col">
                         <div class="card shadow-sm">
                     
                             <?php
                             $id = $row['id'];
-                            $image = "images/productos/" . $id "/principal.jpg";
+                            $imagen = "images/productos/" . $id . "/principal.jpg";
 
                             if (!file_exists($imagen)){
                                 $imagen = "images/no-photo.jpg"
@@ -80,14 +81,18 @@ $resultado = $sql->fetchAll(PDO::FETCH_ASSOC);
                                 <p class="card-text"> <?php echo number_format($row['precio'], 2, ',', '.'); ?> </p>
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div class="btn-group">
-                                        <a href="#" class="btn btn-primary"> Detalles </a>
+                                        <a href="details.php?id=<?php echo $row['id']; ?> & token=<?php 
+                                        echo hash_hmac('sha1',$row['id'], KEY_TOKEN); ?>" class="btn btn-primary"> Detalles </a>
                                     </div>
-                                    <a href="#" class=btn btn-success"> Agregar </a>
+                                    <button class="btn btn-outline-success" type="button" onclick="addProducto
+                                    (<?php echo $row['id']; ?>, '<?php echo hash_hmac('sha1',$row['id'],
+                                    KEY_TOKEN); ?>')"> Agregar al carrito 
+                                    </button>
                                 </div>
                             </div>
                         </div>
-                </div>
-                ?>
+                    </div>
+                <?php } ?>
             </div>
         </div>
     </main>
@@ -95,9 +100,25 @@ $resultado = $sql->fetchAll(PDO::FETCH_ASSOC);
     integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" 
     crossorigin="anonymous"></script>
 
+    <script>
+        function addProducto(id, token){
+            let url ='clases/carrito.php'
+            let formData =new formData()
+            formData.append('id', id)
+            formData.append('token', token)
+
+            fetch(url,{
+                method: 'POST',
+                body: formData,
+                mode:'cors'
+            }).then(response => response.jason())
+            .then(data =>{
+                if(data.ok){
+                    let elemento = document.getElementById("num_cart") 
+                    elemento.innerHTML = data.numero
+                }
+            })
+        }
+    </script>
+
 </body>
-
-
-
-
-
